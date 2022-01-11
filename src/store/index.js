@@ -11,11 +11,17 @@ const store = new Vuex.Store({
     locationSearchString: '',
     zipCode: ''
   },
+  getters: {
+    weatherData: state => state.weather,
+    favWeather: state => state.favWeather ,
+    loginData: state => state.loginData
+  },
   mutations: {
     SET_WEATHER (state, weather) {
       state.weather = weather
     },
     SET_SEARCHSTRING (state, locationSearchString) {
+      console.log(locationSearchString)
       state.locationSearchString = locationSearchString
     }
   },
@@ -24,30 +30,42 @@ const store = new Vuex.Store({
       commit('SET_WEATHER', weather)
     },
     setLocation ({ commit, dispatch }, locationSearchString) {
+      console.log(locationSearchString)
       commit('SET_SEARCHSTRING', locationSearchString)
       dispatch('getWeather')
     },
     lookupLocationByZip ({ commit }, zip) {
       const apiKey = 'bqfkH2mN49AwnuBkPBkaOMblKlGk7vFAnfdg2S1pk16ZzQuMTTEhQgdKZ1ye2uWj'
       const apiUrl = `http://www.zipcodeapi.com/rest/${apiKey}/info.json/${zip}/degrees`
-      axios.get(apiUrl)
+      axios.get(apiUrl
+      //   , {
+      //   headers: { //headers go here
+      //     'Access-Control-Allow-Origin' : 'http://localhost:8081'
+      //   }
+      // }
+      )
       .then(response => {
         console.log(response.data)
-        // if the response is successful, update the location search string
-        // then trigger the getWeather action
-        commit('TODO_CREATE_MUTATION', null)
+        // if the response is successful, update the location
+
+        commit('SET_SEARCHSTRING', response.data)
+      })
+      .catch(error => {
+        console.log(error)
       })
     },
     getWeather ({ commit, state }) {
-      console.log('getWeather')
       const apiUrl = 'http://api.openweathermap.org/data/2.5/weather'
       const appId = '75105c22424878900ef3a764236b2549'
-      axios.get(`${apiUrl}?q=${state.location}&appid=${appId}`)
+      axios.get(`${apiUrl}?q=${state.locationSearchString.city},&appid=${appId}`)
       .then(response => {
         console.log(response.data)
         // if the response is successful, update the weather
 
-        commit('SET_WEATHER', null)
+        commit('SET_WEATHER', response.data)
+      })
+      .catch(error => {
+        console.log(error)
       })
     }
   }
